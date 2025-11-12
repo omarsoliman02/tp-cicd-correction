@@ -4,19 +4,22 @@ env:
   TWINE_USERNAME: __token__
   TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
 
+# 👇 Le workflow CD se déclenche automatiquement
+# uniquement quand le workflow CI se termine avec succès sur la branche main
 on:
-  push:
-    tags:
-      - "v*.*.*"   # Déclenchement uniquement sur les tags versionnés (ex: v1.0.0)
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types:
+      - completed
 
 permissions:
   contents: read
 
 jobs:
   publish:
-    # ✅ Condition correcte : le job s'exécute si le workflow précédent (CI) a réussi
-    # ou si l'événement est un push direct
-    if: ${{ github.event.workflow.conclusion == 'success' || github.event_name == 'push' }}
+    # Ce job ne s'exécute que si le workflow CI s'est bien terminé (success)
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
     steps:
