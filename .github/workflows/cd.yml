@@ -1,0 +1,41 @@
+name: CD (TestPyPI)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"   # Runs only when a version tag is pushed (e.g. v1.0.0)
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build the package
+        run: python -m build
+
+      - name: Check the package
+        run: twine check dist/*
+
+      - name: Publish to TestPyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.pypi-AgENdGVzdC5weXBpLm9yZwIkNTJlYzUzMjAtYjlkYS00NDUwLWE5MjgtMWNmZWY1ZWUzNWRhAAIqWzMsIjY5MzczOTFjLWI1NDEtNGEzYi05ZTdmLTA2ZmQyNTIyZWMwNSJdAAAGIG-e2B6EW_iitNCuWs8GUOwxfHtUjQbB4craDd8M5UJ_ }}
+        run: |
+          twine upload \
+            --repository-url https://test.pypi.org/legacy/ \
+            dist/*
