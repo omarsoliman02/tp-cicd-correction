@@ -1,5 +1,9 @@
 name: CD (TestPyPI)
 
+env:
+  TWINE_USERNAME: __token__
+  TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+
 on:
   push:
     branches: [main]
@@ -30,17 +34,7 @@ jobs:
       - name: Check the package
         run: twine check dist/*
 
-      - name: twine register
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          twine register --repository-url https://test.pypi.org/legacy
-
       - name: Publish to TestPyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
           twine upload \
             --repository-url https://test.pypi.org/legacy/ \
