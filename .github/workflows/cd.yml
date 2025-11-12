@@ -6,14 +6,19 @@ env:
 
 on:
   push:
-    branches: [main]
+    tags:
+      - "v*.*.*"   # Déclenchement uniquement sur les tags versionnés (ex: v1.0.0)
 
 permissions:
   contents: read
 
 jobs:
   publish:
+    # ✅ Condition correcte : le job s'exécute si le workflow précédent (CI) a réussi
+    # ou si l'événement est un push direct
+    if: ${{ github.event.workflow.conclusion == 'success' || github.event_name == 'push' }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -35,6 +40,9 @@ jobs:
         run: twine check dist/*
 
       - name: Publish to TestPyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
         run: |
           twine upload \
             --repository-url https://test.pypi.org/legacy/ \
