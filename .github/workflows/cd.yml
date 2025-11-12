@@ -2,8 +2,7 @@ name: CD (TestPyPI)
 
 on:
   push:
-    tags:
-      - "v*.*.*"   # Runs only when a version tag is pushed (e.g. v1.0.0)
+    branches: [main]
 
 permissions:
   contents: read
@@ -31,10 +30,17 @@ jobs:
       - name: Check the package
         run: twine check dist/*
 
+      - name: twine register
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          twine register --repository-url https://test.pypi.org/legacy
+
       - name: Publish to TestPyPI
         env:
           TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.pypi-AgENdGVzdC5weXBpLm9yZwIkNTJlYzUzMjAtYjlkYS00NDUwLWE5MjgtMWNmZWY1ZWUzNWRhAAIqWzMsIjY5MzczOTFjLWI1NDEtNGEzYi05ZTdmLTA2ZmQyNTIyZWMwNSJdAAAGIG-e2B6EW_iitNCuWs8GUOwxfHtUjQbB4craDd8M5UJ_ }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
           twine upload \
             --repository-url https://test.pypi.org/legacy/ \
